@@ -2,8 +2,8 @@
 
 This project identifies and analyzes cachalot (sperm whale; Physeter macrocephalus) echolocation clicks found in 7 years of near continuous recording from the Monterey Bay Aquarium Research Institute (MBARI) MARS hydrophone. 
 
-Full hydrophone data archive: https://www.mbari.org/data/passive-acoustic-data/
-\nMBARI Ocean Soundscape Team: https://www.mbari.org/team/ocean-soundscape/
+Full hydrophone data archive: https://www.mbari.org/data/passive-acoustic-data/  
+MBARI Ocean Soundscape Team: https://www.mbari.org/team/ocean-soundscape/
 
 Energy detection files (data/BLED) are daily tables of potential cachalot click detections. These tables are then processed to identify true positive sperm whale click sequences using inter-click-intervals of a constant, repetitive nature (code/1_processing/daynight_presence.R). This methodology has been assessed for performance and optimized for key parameters (code/0_performance_assess). Further processing includes calculation of sequences of consecutive recording days with click presence (code/1_processing/sequences.R). These processed results are analyzed and visualized (outputs/figures) using the script "code/2_analysis/figures.R".
 
