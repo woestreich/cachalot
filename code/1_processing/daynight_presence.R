@@ -84,6 +84,7 @@ for (f in 1:length(files)) {
                                    lon = hlon,
                                    keep = "altitude")
   bled1$sol <- sun$altitude
+  bled1$soldeg <- bled1$sol*180/pi
   
   #### is there a clear cachalot cadence in this 24-hour day? 
   test1 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE)
@@ -95,7 +96,7 @@ for (f in 1:length(files)) {
   }
   
   #### is there a clear cachalot cadence in daylight hours? 
-  test2 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & sol > 0)
+  test2 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & soldeg > 0)
   if (length(test2$seq) >= 1) {
     presence$day[f] <- 1
   }
@@ -104,7 +105,7 @@ for (f in 1:length(files)) {
   }
   
   #### is there a clear cachalot cadence in nighttime hours? 
-  test3 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & sol < -12)
+  test3 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & soldeg < -12)
   if (length(test3$seq) >= 1) {
     presence$night[f] <- 1
   }
@@ -113,7 +114,7 @@ for (f in 1:length(files)) {
   }
   
   #### is there a clear cachalot cadence in nighttime hours? 
-  test4 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & sol >= -12 & sol <= 0)
+  test4 <- bled1 %>% filter(diff >= minsep & diff <= maxsep & seq == TRUE & soldeg >= -12 & soldeg <= 0)
   if (length(test4$seq) >= 1) {
     presence$dd[f] <- 1
   }
@@ -133,12 +134,17 @@ for (f in 1:length(files)) {
   }
 }
 
+##### now calculate normalized click detection rates by solar elevation category
+clicks$soldeg <- clicks$sol*180/pi
+
 ##### store year and month information for later time-series analysis
 presence$month <- month(presence$date)
 presence$year <- year(presence$date)
 
-##### save presence/absence information to file
+##### save presence/absence, click solar elevation information to files
 write.csv(presence, file = "outputs/files/presence.csv")
+clicks_soldeg <- clicks$soldeg
+write.csv(clicks_soldeg,"outputs/files/clicks_soldeg.csv",row.names = FALSE)
 
 ##### day vs. night calcs normalized by recording time 
 rectime <- readMat("data/recording_time.mat")
@@ -154,11 +160,9 @@ dts <- as.POSIXct(strftime(as.POSIXct(secs, origin = '1970-1-1', tz = 'UTC'), fo
 ct_n <- ct_n[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
 ct_dd <- ct_dd[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
 ct_d <- ct_d[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
-## now calculate normalized click detection rates by solar elevation category
-clicks$soldeg <- clicks$sol*180/pi
 
 ##### Save presences and rates by solar elevation category
-day_night_dd <- data.frame(matrix(NA, nrow = length(files), ncol = 3))
+day_night_dd <- data.frame(matrix(NA, nrow = 3, ncol = 3))
 colnames(day_night_dd) <- c("sol_category","rate","totaldays")
 
 # night
