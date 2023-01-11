@@ -108,11 +108,11 @@ pa <- ggplot(clicks_soldeg, aes(soldeg)) +
   geom_vline(xintercept = 0, linetype="dashed", color = "black") +
   geom_density(size = 2) +
   geom_density(data = tsol, aes(soldeg), size = 2, linetype = "dashed") +
-  annotate("label", label = "Night\n12.5 clicks/hr", x = -44.5, y = 0.0007, fill = "white", size = 5) +
-  annotate("label", label = "Dusk/Dawn\n12.5 clicks/hr", x = -6, y = 0.0007, fill = "white", size = 5) +
-  annotate("label", label = "Day\n15.2 clicks/hr", x = 32.5, y = 0.0007, fill = "white", size = 5) +
+  annotate("label", label = "Night\n11.3 clicks/hr", x = -44.5, y = 0.0007, fill = "white", size = 5) +
+  annotate("label", label = "Dusk/Dawn\n10.3 clicks/hr", x = -6, y = 0.0007, fill = "white", size = 5) +
+  annotate("label", label = "Day\n14.1 clicks/hr", x = 32.5, y = 0.0007, fill = "white", size = 5) +
   xlab("solar elevation (degrees)") +
-  ylab("") +
+  ylab("density") +
   geom_segment(aes(x=-70, y=0.013, xend=-50, yend=0.013),color="black",size=2) +
   geom_segment(aes(x=-70, y=0.012, xend=-50, yend=0.012),color="black",linetype="dashed",size=2) +
   annotate("text", label = "Detected clicks", x = -45, y = 0.013, hjust=0, size = 5) +

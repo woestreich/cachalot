@@ -126,10 +126,10 @@ for (f in 1:length(files)) {
   if (f == 1) {
     clicks <- data.frame(matrix(NA, nrow = length(bled1$Selection), ncol = length(bled1)))
     colnames(clicks) <- colnames(bled1)
-    clicks <- bled1
+    clicks <- bled1 %>% filter(seq == 1)
   }
   else {
-    newclicks <- bled1 %>% filter(seq ==1)
+    newclicks <- bled1 %>% filter(seq == 1)
     clicks <- rbind(clicks,newclicks)
   }
 }
