@@ -6,7 +6,7 @@ Full hydrophone data archive: https://www.mbari.org/data/passive-acoustic-data/
 
 MBARI Ocean Soundscape Team: https://www.mbari.org/team/ocean-soundscape/
 
-Energy detection files (data/BLED) are daily tables of potential cachalot click detections. These tables are then processed to identify true positive sperm whale click sequences using inter-click-intervals of a constant, repetitive nature (code/1_processing/daynight_presence.R). This methodology has been assessed for performance and optimized for key parameters (code/O_performance_assess). Further processing includes calculation of sequences of consecutive recording days with click presence (code/1_processing/sequences.R). These processed results are analyzed and visualized (outputs/figures) using the script "code/2_analysis/figures.R".
+Energy detection files (data/BLED) are daily tables of potential cachalot click detections. These tables are then processed to identify true positive sperm whale click sequences using inter-click-intervals of a constant, repetitive nature (code/1_processing/daynight_presence.R). This methodology has been assessed for performance and optimized for key parameters (code/0_performance_assess). Further processing includes calculation of sequences of consecutive recording days with click presence (code/1_processing/sequences.R). These processed results are analyzed and visualized (outputs/figures) using the script "code/2_analysis/figures.R".
 
 BLED detections were generated in Raven Pro v.1.6.3 (Cornell Lab of Ornithology), using a Band Limited Energy Detector with the following parameters:
 
