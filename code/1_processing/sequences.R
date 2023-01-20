@@ -14,6 +14,7 @@
 
 ##### packages
 library(tidyverse)
+library(lubridate)
 ## clear variables
 rm(list=ls())
 
@@ -30,8 +31,8 @@ d <- data.frame(matrix(NA, nrow = 1, ncol = 4))
 colnames(d) <- c("year","month","yday","length")
 da <- data.frame(matrix(NA, nrow = 1, ncol = 4))
 colnames(da) <- c("year","month","yday","length")
-index <- 0 # the first day of switch to absence in the time series (minus 1)
-indexa <- 3 # the first day of switch to presence in the time series (minus 1)
+index <- 1 # the first day of switch to absence in the time series (minus 1)
+indexa <- 0 # the first day of switch to presence in the time series (minus 1)
 
 for (i in 1:(length(presence$yn)-1)) {
   
@@ -42,8 +43,8 @@ for (i in 1:(length(presence$yn)-1)) {
     ## meeting this condition means that we are at the end of a presence sequence
     # calculate sequence length, and store month and year info
     d$length <- i - indexa
-    d$year <- format(presence$date[indexa+1], format="%Y")
-    d$month <- format(presence$date[indexa+1], format="%m")
+    d$year <- year(presence$date[indexa+1])
+    d$month <- month(presence$date[indexa+1])
     d$yday <- yday(presence$date[indexa+1])
     sequences <- rbind(sequences,d)
     
@@ -54,8 +55,8 @@ for (i in 1:(length(presence$yn)-1)) {
     ## meeting this condition means that we are at the end of a absence sequence
     # calculate absence length, and store month and year info
     da$length <- i - index
-    da$year <- format(presence$date[index+1], format="%Y")
-    da$month <- format(presence$date[index+1], format="%m")
+    da$year <- year(presence$date[index+1])
+    da$month <- month(presence$date[index+1])
     da$yday <- yday(presence$date[index+1])
     absences <- rbind(absences,da)
     
@@ -72,7 +73,7 @@ sequences2 <- data.frame(matrix(NA, nrow = 0, ncol = 4))
 colnames(sequences2) <- c("year","month","yday","length")
 d2 <- data.frame(matrix(NA, nrow = 1, ncol = 4))
 colnames(d2) <- c("year","month","yday","length")
-indexb <- 3 # the first day of switch to presence in the time series (minus 1)
+indexb <- 0 # the first day of switch to presence in the time series (minus 1)
 
 for (i in 1:(length(presence$yn)-2)) {
   
@@ -83,8 +84,8 @@ for (i in 1:(length(presence$yn)-2)) {
     ## meeting this condition means that we are at the end of a presence sequence
     # calculate sequence length, and store month and year info
     d2$length <- i - indexb
-    d2$year <- format(presence$date[indexb+1], format="%Y")
-    d2$month <- format(presence$date[indexb+1], format="%m")
+    d2$year <- year(presence$date[indexb+1])
+    d2$month <- month(presence$date[indexb+1])
     d2$yday <- yday(presence$date[indexb+1])
     sequences2 <- rbind(sequences2,d2)
     

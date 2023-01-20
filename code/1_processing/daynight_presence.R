@@ -141,10 +141,30 @@ clicks$soldeg <- clicks$sol*180/pi
 presence$month <- month(presence$date)
 presence$year <- year(presence$date)
 
-##### save presence/absence, click solar elevation information to files
+##### calculate yearly % recording days present
+annual_perc <- data.frame(matrix(NA, nrow = 8, ncol = 2))
+colnames(annual_perc) <- c("year","perc")
+for (yr in 2015:2022) {
+  subyr <- presence %>% filter(year == yr)
+  annual_perc$perc[yr-2014] <- (sum(subyr$yn)/length(subyr$yn))*100
+  annual_perc$year[yr-2014] <- yr
+}
+late_perc <- data.frame(matrix(NA, nrow = 7, ncol = 2))
+colnames(late_perc) <- c("year","perc")
+for (yr in 2015:2021) {
+  subyr <- presence %>% filter(year == yr & month > 7)
+  late_perc$perc[yr-2014] <- (sum(subyr$yn)/length(subyr$yn))*100
+  late_perc$year[yr-2014] <- yr
+}
+
+
+##### save presence/absence, click solar elevation, annual perc information to files
 write.csv(presence, file = "outputs/files/presence.csv")
-clicks_soldeg <- clicks$soldeg
+clicks$year <- year(clicks$time)
+clicks_soldeg <- clicks %>% select(soldeg,year)
 write.csv(clicks_soldeg,"outputs/files/clicks_soldeg.csv",row.names = FALSE)
+write.csv(annual_perc,"outputs/files/annual_perc.csv",row.names = FALSE)
+write.csv(late_perc,"outputs/files/late_perc.csv",row.names = FALSE)
 
 ##### day vs. night calcs normalized by recording time 
 rectime <- readMat("data/recording_time.mat")
@@ -182,3 +202,35 @@ day_night_dd$totaldays[3] <- sum(presence$day==1)
 
 # save
 write.csv(day_night_dd, file = "outputs/files/day_night_dd_stats.csv")
+
+
+##### day vs. night calcs normalized by recording time, by year
+rectime <- readMat("data/recording_time.mat")
+D <- rectime$D
+ct <- D[[2]]
+## night, dusk/dawn, and day recording time counts (in hours)
+rec <- as.data.frame(matrix(NA, nrow = 2579, ncol = 0))
+rec$ct_n <- ct[44,,1]/12/60
+rec$ct_dd <- ct[44,,2]/12/60
+rec$ct_d <- ct[44,,3]/12/60
+dnum <- D[[5]]
+secs <- (dnum - 719529)*86400
+rec$date <- as.POSIXct(strftime(as.POSIXct(secs, origin = '1970-1-1', tz = 'UTC'), format = '%Y-%m-%d %H:%M', tz = 'UTC', usetz = FALSE), tz = 'UTC')
+rec$year <- year(date)
+
+rec <- rec %>% filter(date <= as.POSIXct("2022-07-31"))
+
+day_night_dd_yearly <- data.frame(matrix(NA, nrow = 8, ncol = 5))
+colnames(day_night_dd_yearly) <- c("year","n_rate","d_rate","dd_rate","ratio")
+for (y in 2015:2022){
+  rec_curr <- rec %>% filter(year == y)
+  clicks_curr <- clicks %>% filter(year == y)
+  
+  day_night_dd_yearly$year[y-2014] <- y
+  day_night_dd_yearly$n_rate[y-2014] <- length(clicks_curr$soldeg[clicks_curr$soldeg < -12])/sum(rec_curr$ct_n)
+  day_night_dd_yearly$d_rate[y-2014] <- length(clicks_curr$soldeg[clicks_curr$soldeg > 0])/sum(rec_curr$ct_d)
+  day_night_dd_yearly$dd_rate[y-2014] <- length(clicks_curr$soldeg[clicks_curr$soldeg >= -12 & clicks_curr$soldeg <= 0])/sum(rec_curr$ct_dd)
+}
+day_night_dd_yearly$ratio <- day_night_dd_yearly$d_rate/day_night_dd_yearly$n_rate
+write.csv(day_night_dd_yearly, file = "outputs/files/day_night_dd_yearly.csv",row.names = FALSE)
+
