@@ -149,7 +149,7 @@ for (yr in 2015:2022) {
   annual_perc$perc[yr-2014] <- (sum(subyr$yn)/length(subyr$yn))*100
   annual_perc$year[yr-2014] <- yr
 }
-late_perc <- data.frame(matrix(NA, nrow = 7, ncol = 2))
+late_perc <- data.frame(matrix(NA, nrow = 8, ncol = 2))
 colnames(late_perc) <- c("year","perc")
 for (yr in 2015:2021) {
   subyr <- presence %>% filter(year == yr & month > 7)
@@ -161,7 +161,8 @@ for (yr in 2015:2021) {
 ##### save presence/absence, click solar elevation, annual perc information to files
 write.csv(presence, file = "outputs/files/presence.csv")
 clicks$year <- year(clicks$time)
-clicks_soldeg <- clicks %>% select(soldeg,year)
+clicks$month <- month(clicks$time)
+clicks_soldeg <- clicks %>% select(soldeg,year,month)
 write.csv(clicks_soldeg,"outputs/files/clicks_soldeg.csv",row.names = FALSE)
 write.csv(annual_perc,"outputs/files/annual_perc.csv",row.names = FALSE)
 write.csv(late_perc,"outputs/files/late_perc.csv",row.names = FALSE)
@@ -177,9 +178,9 @@ ct_d <- ct[44,,3]/12/60
 dnum <- D[[5]]
 secs <- (dnum - 719529)*86400
 dts <- as.POSIXct(strftime(as.POSIXct(secs, origin = '1970-1-1', tz = 'UTC'), format = '%Y-%m-%d %H:%M', tz = 'UTC', usetz = FALSE), tz = 'UTC')
-ct_n <- ct_n[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
-ct_dd <- ct_dd[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
-ct_d <- ct_d[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2022-08-01"))]
+ct_n <- ct_n[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2023-01-01"))]
+ct_dd <- ct_dd[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2023-01-01"))]
+ct_d <- ct_d[which(dts > as.POSIXct("2015-07-31") & dts < as.POSIXct("2023-01-01"))]
 
 ##### Save presences and rates by solar elevation category
 day_night_dd <- data.frame(matrix(NA, nrow = 3, ncol = 3))
@@ -209,16 +210,15 @@ rectime <- readMat("data/recording_time.mat")
 D <- rectime$D
 ct <- D[[2]]
 ## night, dusk/dawn, and day recording time counts (in hours)
-rec <- as.data.frame(matrix(NA, nrow = 2579, ncol = 0))
+rec <- as.data.frame(matrix(NA, nrow = length(ct[44,,1]), ncol = 0))
 rec$ct_n <- ct[44,,1]/12/60
 rec$ct_dd <- ct[44,,2]/12/60
 rec$ct_d <- ct[44,,3]/12/60
 dnum <- D[[5]]
 secs <- (dnum - 719529)*86400
 rec$date <- as.POSIXct(strftime(as.POSIXct(secs, origin = '1970-1-1', tz = 'UTC'), format = '%Y-%m-%d %H:%M', tz = 'UTC', usetz = FALSE), tz = 'UTC')
-rec$year <- year(date)
-
-rec <- rec %>% filter(date <= as.POSIXct("2022-07-31"))
+rec$year <- year(rec$date)
+rec$month <- month(rec$date)
 
 day_night_dd_yearly <- data.frame(matrix(NA, nrow = 8, ncol = 5))
 colnames(day_night_dd_yearly) <- c("year","n_rate","d_rate","dd_rate","ratio")
@@ -233,4 +233,29 @@ for (y in 2015:2022){
 }
 day_night_dd_yearly$ratio <- day_night_dd_yearly$d_rate/day_night_dd_yearly$n_rate
 write.csv(day_night_dd_yearly, file = "outputs/files/day_night_dd_yearly.csv",row.names = FALSE)
+
+##### Monthly percent presence and diel ratio
+yy <- rep(c(2015,2016,2017,2018,2019,2020,2021,2022),each=12)
+yy <- yy[8:96]
+mm <- rep(c(1,2,3,4,5,6,7,8,9,10,11,12),times=8)
+mm <- mm[8:96]
+
+monthly <- data.frame(matrix(NA, nrow = length(yy), ncol = 7))
+colnames(monthly) <- c("year","month","perc","n_rate","d_rate","dd_rate","ratio")
+for (i in 1:length(yy)) {
+  mo <- presence %>% filter(month == mm[i], year == yy[i])
+  monthly$year[i] <- yy[i]
+  monthly$month[i] <- mm[i]
+  monthly$perc[i] <- (sum(mo$yn)/length(mo$yn))*100
+  
+  rec_curr <- rec %>% filter(year == yy[i], month == mm[i])
+  clicks_curr <- clicks %>% filter(year == yy[i], month == mm[i])
+  monthly$n_rate[i] <- length(clicks_curr$soldeg[clicks_curr$soldeg < -12])/sum(rec_curr$ct_n)
+  monthly$d_rate[i] <- length(clicks_curr$soldeg[clicks_curr$soldeg > 0])/sum(rec_curr$ct_d)
+  monthly$dd_rate[i] <- length(clicks_curr$soldeg[clicks_curr$soldeg >= -12 & clicks_curr$soldeg <= 0])/sum(rec_curr$ct_dd)
+  monthly$ratio[i] <- monthly$d_rate[i]/monthly$n_rate[i]
+}
+
+write.csv(monthly, file = "outputs/files/monthly.csv",row.names = FALSE)
+
 
